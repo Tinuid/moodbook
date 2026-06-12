@@ -1,0 +1,87 @@
+/*
+ * Design tokens — single source of truth for the whole app.
+ * Structured so a future dark theme only needs a second variable set
+ * (e.g. `[data-theme='dark'] { ... }`) overriding the same names.
+ */
+:root {
+  /* Surfaces & text */
+  --color-bg: oklch(97% 0.012 55); /* warm paper background (A-style) */
+  --color-bg-b: #fefcfa; /* B-style screen background */
+  --color-card: oklch(99% 0.006 55);
+  --color-text: oklch(22% 0.025 55);
+  --color-muted: oklch(55% 0.02 55);
+  --color-subtle: oklch(78% 0.015 55);
+  --color-border: oklch(91% 0.01 55);
+
+  /* Accent (mauve / rose) */
+  --color-accent: oklch(60% 0.14 345);
+  --color-accent-bg: oklch(95% 0.055 345);
+
+  /* Semantic */
+  --color-green: #4a9070;
+  --color-green-bg: #e6f4ee;
+
+  /* Period */
+  --color-period: #c04060;
+  --color-period-bg: #faeaea;
+  --color-menstruation: #b85c5c;
+
+  /* Eindosierung side-effects (amber) */
+  --color-amber: #c47a40;
+
+  /* Typography */
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+
+  /* Layout */
+  --tabbar-height: 60px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --status-pad: 62px; /* top padding for the iOS status-bar area */
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Portrait, vertical scroll only — never horizontal */
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+/* Remove default tap highlight on touch */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
