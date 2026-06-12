@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<!-- @dsCard group="Components" -->
+<html lang="de">
+<head>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 80 56" xmlns="http://www.w3.org/2000/svg">
+  <rect width="80" height="56" fill="oklch(97% 0.012 55)"/>
+  <rect x="12" y="8" width="22" height="40" rx="4" fill="white" stroke="#e0d8d5" stroke-width="1"/>
+  <rect x="46" y="8" width="22" height="40" rx="4" fill="white" stroke="#e0d8d5" stroke-width="1"/>
+  <rect x="14" y="14" width="18" height="3" rx="1" fill="oklch(60% 0.14 345)" opacity="0.7"/>
+  <rect x="14" y="20" width="14" height="2" rx="1" fill="#ccc"/>
+  <rect x="14" y="25" width="16" height="2" rx="1" fill="#ccc"/>
+  <rect x="48" y="14" width="18" height="3" rx="1" fill="oklch(60% 0.14 345)" opacity="0.7"/>
+  <rect x="48" y="20" width="14" height="2" rx="1" fill="#ccc"/>
+  <rect x="48" y="25" width="16" height="2" rx="1" fill="#ccc"/>
+</svg>
+</template>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mood Tagebuch – Mockup v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300;1,6..72,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>*, *::before, *::after { box-sizing: border-box; } body { margin: 0; }</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel">
+
+    const T = {
+      bg: 'oklch(97% 0.012 55)', card: 'oklch(99% 0.006 55)',
+      accent: 'oklch(60% 0.14 345)', accentBg: 'oklch(95% 0.055 345)',
+      text: 'oklch(22% 0.025 55)', muted: 'oklch(55% 0.02 55)',
+      subtle: 'oklch(78% 0.015 55)', border: 'oklch(91% 0.01 55)',
+      green: '#4A9070', greenBg: '#E6F4EE',
+      serif: '"Newsreader", Georgia, serif',
+      sans: '"DM Sans", system-ui, sans-serif',
+    };
+
+    const MOODS = [
+      { label:'Mies',     emoji:'😞', color:'#B85C5C', bg:'#FAEAEA' },
+      { label:'Schlecht', emoji:'😕', color:'#C47A40', bg:'#FAF0E4' },
+      { label:'Ok',       emoji:'😐', color:'#B89A30', bg:'#F8F5DC' },
+      { label:'Gut',      emoji:'🙂', color:'#4A8AB0', bg:'#E6F0F8' },
+      { label:'Super',    emoji:'😊', color:'#4A9070', bg:'#E6F4EE' },
+    ];
+    const CAL_DATA = {1:4,2:3,3:3,4:4,5:3,8:3,9:4,10:4,11:2,12:4,15:3,16:3,17:4,18:4,19:2,22:4,23:3,24:1,25:3,26:3,29:2,30:3};
+    const PERIOD_DAYS = new Set([9,10,11,12,13]); // Periode 9.–13. Juni
+    const WD = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+    const WEEKS = [[1,2,3,4,5,6,7],[8,9,10,11,12,13,14],[15,16,17,18,19,20,21],[22,23,24,25,26,27,28],[29,30,0,0,0,0,0]];
+
+    const HAUPT = [
+      { name:'Aufmerksamkeitsstörung', val:3 },
+      { name:'Impulsivität',           val:2 },
+      { name:'Unorganisiertes Verhalten', val:4 },
+      { name:'Prokrastination',        val:3 },
+    ];
+    const NEBEN = [
+      { name:'Innere Unruhe',           val:1 },
+      { name:'Stimmungswechsel',        val:0 },
+      { name:'Reizbarkeit / Wutausbrüche', val:2 },
+      { name:'Müdigkeit',               val:3 },
+      { name:'Schlafstörungen',         val:2 },
+      { name:'Übelkeit',                val:0 },
+      { name:'Schwindel',               val:0 },
+      { name:'Appetitlosigkeit',        val:1 },
+    ];
+
+    /* ── Icons ── */
+    const Icon = ({ name, size=20, color='currentColor', sw=1.8 }) => {
+      const p = { stroke:color, fill:'none', strokeWidth:sw, strokeLinecap:'round', strokeLinejoin:'round' };
+      const ic = {
+        home:  <><polygon points="3,9 12,2 21,9 21,22 3,22" {...p}/><polyline points="9,22 9,12 15,12 15,22" {...p}/></>,
+        cal:   <><rect x="3" y="4" width="18" height="18" rx="2" {...p}/><line x1="16" y1="2" x2="16" y2="6" {...p}/><line x1="8" y1="2" x2="8" y2="6" {...p}/><line x1="3" y1="10" x2="21" y2="10" {...p}/></>,
+        chart: <><line x1="18" y1="20" x2="18" y2="10" {...p}/><line x1="12" y1="20" x2="12" y2="4" {...p}/><line x1="6" y1="20" x2="6" y2="14" {...p}/></>,
+        clip:  <><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2" {...p}/><rect x="8" y="2" width="8" height="4" rx="1" {...p}/><line x1="9" y1="12" x2="15" y2="12" {...p}/><line x1="9" y1="16" x2="13" y2="16" {...p}/></>,
+        moon:  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" {...p}/>,
+        zap:   <polygon points="13,2 3,14 12,14 11,22 21,10 12,10" {...p}/>,
+        weight:<><circle cx="12" cy="10" r="5" {...p}/><polyline points="5,20 5,18 19,18 19,20" {...p}/><line x1="12" y1="15" x2="12" y2="18" {...p}/></>,
+        run:   <><circle cx="16" cy="4" r="2" {...p}/><path d="M7 20l4-10 4 4 2-5 3 3" {...p}/></>,
+        pill:  <><rect x="2" y="8" width="20" height="8" rx="4" {...p}/><line x1="12" y1="8" x2="12" y2="16" {...p}/></>,
+        pulse: <polyline points="22,12 18,12 15,21 9,3 6,12 2,12" {...p}/>,
+        drop:  <path d="M12 2L6.5 13.5a6 6 0 1011 0L12 2z" {...p}/>,
+        clock: <><circle cx="12" cy="12" r="10" {...p}/><polyline points="12,6 12,12 16,14" {...p}/></>,
+        back:  <polyline points="15,18 9,12 15,6" {...p}/>,
+        plus:  <><line x1="12" y1="5" x2="12" y2="19" {...p}/><line x1="5" y1="12" x2="19" y2="12" {...p}/></>,
+        edit:  <><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" {...p}/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z" {...p}/></>,
+        check: <polyline points="20,6 9,17 4,12" {...p}/>,
+      };
+      return <svg width={size} height={size} viewBox="0 0 24 24" style={{display:'block',flexShrink:0}}>{ic[name]}</svg>;
+    };
+
+    /* ── Shared ── */
+    const BottomNav = ({ active=0, light=false }) => (
+      <div style={{display:'flex', borderTop:`1px solid ${T.border}`, background:light?'white':T.card, flexShrink:0, paddingBottom:4}}>
+        {[['home','Heute'],['cal','Verlauf'],['chart','Statistiken'],['clip','Eindosierung']].map(([n,lbl],i)=>(
+          <div key={i} style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3, padding:'9px 0', color:i===active?T.accent:T.subtle}}>
+            <Icon name={n} size={20} color={i===active?T.accent:T.subtle}/>
+            <span style={{fontSize:9, fontFamily:T.sans, fontWeight:500}}>{lbl}</span>
+          </div>
+        ))}
+      </div>
+    );
+
+    const MetricCard = ({icon,label,value,unit,note}) => (
+      <div style={{background:T.card, borderRadius:14, padding:'11px 13px', border:`1px solid ${T.border}`, display:'flex', flexDirection:'column', gap:3}}>
+        <div style={{display:'flex', alignItems:'center', gap:5, marginBottom:1}}>
+          <Icon name={icon} size={12} color={T.muted}/>
+          <span style={{fontSize:9, fontWeight:600, color:T.muted, textTransform:'uppercase', letterSpacing:'0.06em'}}>{label}</span>
+        </div>
+        <div style={{display:'flex', alignItems:'baseline', gap:3}}>
+          <span style={{fontSize:20, fontWeight:600, color:T.text}}>{value}</span>
+          {unit&&<span style={{fontSize:11, color:T.muted}}>{unit}</span>}
+        </div>
+        {note&&<span style={{fontSize:10, color:T.muted}}>{note}</span>}
+      </div>
+    );
+
+    /* ══════════════════════════════════════
+       SCREEN 01 – Heute (Variante A-Stil)
+       mit Medikamenten-Eingabe
+    ══════════════════════════════════════ */
+    function TodayA() {
+      return (
+        <div style={{background:T.bg, display:'flex', flexDirection:'column', paddingTop:62, fontFamily:T.sans, color:T.text}}>
+
+          {/* Header */}
+          <div style={{padding:'14px 20px 12px', display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+            <div>
+              <div style={{fontSize:12, color:T.muted}}>Freitag, 12. Juni 2026</div>
+              <div style={{fontSize:20, fontWeight:600, color:T.text, marginTop:2}}>Guten Abend 🌙</div>
+            </div>
+            <div style={{width:38, height:38, borderRadius:19, background:T.accentBg, border:`1.5px solid ${T.accent}30`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:600, color:T.accent}}>M</div>
+          </div>
+
+          {/* Mood selector */}
+          <div style={{margin:'0 20px 12px', background:T.card, borderRadius:16, padding:'12px 14px', border:`1px solid ${T.border}`}}>
+            <div style={{fontSize:11, fontWeight:600, color:T.text, marginBottom:9}}>Wie war dein Tag?</div>
+            <div style={{display:'flex', gap:5}}>
+              {MOODS.map((m,i)=>(
+                <div key={i} style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:3, padding:'7px 2px 6px', borderRadius:10, background:i===3?m.bg:'transparent', border:i===3?`1.5px solid ${m.color}55`:'1.5px solid transparent'}}>
+                  <span style={{fontSize:20}}>{m.emoji}</span>
+                  <span style={{fontSize:9, fontWeight:i===3?700:400, color:i===3?m.color:T.muted}}>{m.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Metrics 2×3 grid */}
+          <div style={{padding:'0 20px', display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginBottom:12}}>
+            <MetricCard icon="moon"   label="Schlaf"   value="7.5" unit="h"    note="Gut geschlafen"/>
+            <MetricCard icon="zap"    label="Energie"  value="7"   unit="/ 10"/>
+            <MetricCard icon="weight" label="Gewicht"  value="73.2" unit="kg"/>
+            <MetricCard icon="run"    label="Sport"    value="45"  unit="min"/>
+            <MetricCard icon="pulse"  label="Stress"   value="4"   unit="/ 10"/>
+            <MetricCard icon="drop"   label="Wasser"   value="1.8" unit="L"/>
+          </div>
+
+          {/* ── Periode ── */}
+          <div style={{margin:'0 20px 12px', background:T.card, borderRadius:16, padding:'12px 15px', border:`1px solid ${T.border}`}}>
+            <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10}}>
+              <div style={{display:'flex', alignItems:'center', gap:6}}>
+                <span style={{fontSize:14}}>🩸</span>
+                <span style={{fontSize:11, fontWeight:600, color:T.text, textTransform:'uppercase', letterSpacing:'0.06em'}}>Periode</span>
+              </div>
+              <div style={{display:'flex', gap:6, alignItems:'center'}}>
+                <span style={{fontSize:11, color:T.muted}}>Zyklus-Tag 28</span>
+                <span style={{fontSize:10, background:'#FAEAEA', color:'#B85C5C', padding:'2px 8px', borderRadius:10, fontWeight:600}}>Menstruation</span>
+              </div>
+            </div>
+            <div style={{display:'flex', gap:6}}>
+              {[{lbl:'Keine',sel:false},{lbl:'Leicht',sel:false},{lbl:'Mittel',sel:true},{lbl:'Stark',sel:false}].map((o,i)=>(
+                <div key={i} style={{flex:1, padding:'7px 2px', borderRadius:10, textAlign:'center', background:o.sel?'#FAEAEA':'transparent', border:o.sel?`1.5px solid #C04060`:`1px solid ${T.border}`, fontSize:11, fontWeight:o.sel?700:400, color:o.sel?'#C04060':T.muted}}>{o.lbl}</div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Medikamente ── */}
+          <div style={{margin:'0 20px 12px', background:T.card, borderRadius:16, padding:'13px 15px', border:`1px solid ${T.border}`}}>
+            {/* Section header */}
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:10}}>
+              <div style={{display:'flex', alignItems:'center', gap:6}}>
+                <Icon name="pill" size={13} color={T.muted}/>
+                <span style={{fontSize:11, fontWeight:600, color:T.text, textTransform:'uppercase', letterSpacing:'0.06em'}}>Medikamente</span>
+              </div>
+              <div style={{width:22, height:22, borderRadius:11, background:T.accentBg, display:'flex', alignItems:'center', justifyContent:'center'}}>
+                <Icon name="plus" size={12} color={T.accent}/>
+              </div>
+            </div>
+
+            {/* Existing entries */}
+            <div style={{display:'flex', flexDirection:'column', gap:6, marginBottom:12}}>
+              {[{time:'08:00', mg:20}, {time:'12:00', mg:10}].map((e,i)=>(
+                <div key={i} style={{display:'flex', alignItems:'center', gap:0, borderRadius:10, background:T.bg, border:`1px solid ${T.border}`, overflow:'hidden'}}>
+                  <div style={{width:6, background:T.green, alignSelf:'stretch'}}/>
+                  <div style={{display:'flex', alignItems:'center', gap:8, padding:'9px 12px', flex:1}}>
+                    <Icon name="clock" size={13} color={T.muted}/>
+                    <span style={{fontSize:13, fontWeight:600, color:T.text}}>{e.time}</span>
+                    <span style={{fontSize:12, color:T.muted}}>Uhr</span>
+                    <div style={{flex:1}}/>
+                    <span style={{fontSize:14, fontWeight:700, color:T.accent}}>{e.mg} mg</span>
+                    <div style={{width:18, height:18, borderRadius:9, background:T.border, display:'flex', alignItems:'center', justifyContent:'center'}}>
+                      <span style={{fontSize:10, color:T.muted, lineHeight:1}}>×</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add new dose */}
+            <div style={{borderTop:`1px solid ${T.border}`, paddingTop:11}}>
+              <div style={{fontSize:9, fontWeight:700, color:T.muted, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:8}}>Neue Einnahme</div>
+              <div style={{display:'flex', gap:8, alignItems:'center', marginBottom:8}}>
+                {/* Time picker mock */}
+                <div style={{flex:1, display:'flex', alignItems:'center', gap:7, padding:'9px 11px', borderRadius:10, background:T.bg, border:`1px solid ${T.border}`}}>
+                  <Icon name="clock" size={13} color={T.accent}/>
+                  <span style={{fontSize:13, fontWeight:600, color:T.text}}>16:00</span>
+                </div>
+                {/* Dose stepper */}
+                <div style={{display:'flex', alignItems:'center', borderRadius:10, border:`1px solid ${T.border}`, background:T.bg, overflow:'hidden'}}>
+                  <div style={{width:34, height:38, display:'flex', alignItems:'center', justifyContent:'center', borderRight:`1px solid ${T.border}`}}>
+                    <span style={{fontSize:18, color:T.muted, lineHeight:1}}>−</span>
+                  </div>
+                  <div style={{padding:'0 12px', display:'flex', alignItems:'center', justifyContent:'center', minWidth:60}}>
+                    <span style={{fontSize:14, fontWeight:700, color:T.accent}}>10 mg</span>
+                  </div>
+                  <div style={{width:34, height:38, display:'flex', alignItems:'center', justifyContent:'center', borderLeft:`1px solid ${T.border}`, background:T.accentBg}}>
+                    <span style={{fontSize:18, color:T.accent, lineHeight:1}}>+</span>
+                  </div>
+                </div>
+              </div>
+              <div style={{background:T.accent, borderRadius:10, padding:'9px', textAlign:'center', color:'white', fontSize:13, fontWeight:600}}>
+                Hinzufügen
+              </div>
+            </div>
+          </div>
+
+          {/* Diary */}
+          <div style={{margin:'0 20px 12px', background:T.card, borderRadius:16, padding:'12px 15px', border:`1px solid ${T.border}`}}>
+            <div style={{fontSize:11, fontWeight:600, color:T.text, marginBottom:7}}>Mein Tag</div>
+            <div style={{fontSize:13, color:T.muted, lineHeight:1.6, fontStyle:'italic', minHeight:48}}>Was hat dich heute bewegt?</div>
+          </div>
+
+          <div style={{padding:'0 20px 14px'}}>
+            <div style={{background:T.accent, borderRadius:14, padding:'13px', textAlign:'center', color:'white', fontSize:14, fontWeight:600}}>Eintrag speichern</div>
+          </div>
+
+          <BottomNav active={0}/>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 02 – Kalender (Variante B)
+    ══════════════════════════════════════ */
+    function CalendarB() {
+      return (
+        <div style={{background:'#FEFCFA', display:'flex', flexDirection:'column', paddingTop:62, fontFamily:T.sans, color:T.text}}>
+          <div style={{padding:'16px 24px 16px', borderBottom:`1px solid ${T.border}`}}>
+            <div style={{fontFamily:T.serif, fontSize:12, color:T.muted, fontStyle:'italic'}}>Monatsübersicht</div>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:4}}>
+              <div style={{fontFamily:T.serif, fontSize:26, fontWeight:300, color:T.text}}>Juni 2026</div>
+              <div style={{display:'flex', gap:18, color:T.subtle, fontSize:22, lineHeight:1}}><span>‹</span><span>›</span></div>
+            </div>
+          </div>
+          <div style={{display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'10px 16px 6px'}}>
+            {WD.map(d=><div key={d} style={{textAlign:'center', fontSize:11, color:T.subtle}}>{d}</div>)}
+          </div>
+          <div style={{padding:'0 16px', display:'flex', flexDirection:'column', gap:4}}>
+            {WEEKS.map((week,wi)=>(
+              <div key={wi} style={{display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:4}}>
+                {week.map((day,di)=>{
+                  const mood=day?CAL_DATA[day]:null, isToday=day===12;
+                  const hasPeriod = PERIOD_DAYS.has(day);
+                  return <div key={di} style={{height:56, borderRadius:8, background:day?(mood!=null?MOODS[mood].bg:'oklch(97% 0.008 55)'):'transparent', border:isToday?`1.5px solid ${T.accent}`:'none', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2, position:'relative'}}>
+                    {day>0&&<><span style={{fontFamily:T.serif, fontSize:13, color:isToday?T.accent:T.text, fontWeight:isToday?600:300}}>{day}</span>{mood!=null&&<span style={{fontSize:10}}>{MOODS[mood].emoji}</span>}</>}
+                    {hasPeriod&&day>0&&<div style={{position:'absolute', top:3, right:4, width:5, height:5, borderRadius:3, background:'#C04060'}}/>}
+                  </div>;
+                })}
+              </div>
+            ))}
+          </div>
+          <div style={{padding:'12px 24px 8px', borderTop:`1px solid ${T.border}`, marginTop:8, display:'flex', gap:12, flexWrap:'wrap'}}>
+            {MOODS.map((m,i)=><div key={i} style={{display:'flex', alignItems:'center', gap:5}}><span style={{fontSize:12}}>{m.emoji}</span><span style={{fontSize:11, color:T.muted}}>{m.label}</span></div>)}
+          </div>
+          <BottomNav active={1} light/>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 03 – Eintrag Detail (Variante B)
+    ══════════════════════════════════════ */
+    function DetailB() {
+      return (
+        <div style={{background:'#FEFCFA', display:'flex', flexDirection:'column', paddingTop:62, fontFamily:T.sans, color:T.text}}>
+          <div style={{padding:'12px 24px 14px', display:'flex', alignItems:'center', gap:12, borderBottom:`1px solid ${T.border}`}}>
+            <Icon name="back" size={18} color={T.muted}/>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:T.serif, fontStyle:'italic', fontSize:12, color:T.muted}}>Mittwoch</div>
+              <div style={{fontFamily:T.serif, fontSize:18, fontWeight:400, color:T.text}}>10. Juni 2026</div>
+            </div>
+            <span style={{fontSize:24}}>{MOODS[4].emoji}</span>
+          </div>
+          <div style={{margin:'20px 24px 18px', paddingLeft:16, borderLeft:`3px solid ${T.accent}`}}>
+            <div style={{fontFamily:T.serif, fontStyle:'italic', fontSize:16, color:T.text, lineHeight:1.65}}>„Heute war ein wirklich guter Tag. Das Gespräch mit Elena hat mir sehr geholfen."</div>
+          </div>
+          {/* Metric strip */}
+          <div style={{padding:'0 24px 18px', borderBottom:`1px solid ${T.border}`, display:'flex', gap:18, flexWrap:'wrap'}}>
+            {[{icon:'moon',v:'8 h'},{icon:'zap',v:'8/10'},{icon:'run',v:'60 Min'},{icon:'pulse',v:'2/10'},{icon:'weight',v:'73.0'},{icon:'pill',v:'20 mg'}].map((m,i)=>(
+              <div key={i} style={{display:'flex', alignItems:'center', gap:6}}>
+                <Icon name={m.icon} size={14} color={T.accent}/>
+                <span style={{fontSize:12, color:T.text, fontWeight:500}}>{m.v}</span>
+              </div>
+            ))}
+            <div style={{display:'flex', alignItems:'center', gap:6}}>
+              <span style={{fontSize:13}}>🩸</span>
+              <span style={{fontSize:12, color:T.text, fontWeight:500}}>Mittel · Tag 2</span>
+            </div>
+          </div>
+          <div style={{padding:'18px 24px', flex:1}}>
+            <div style={{fontFamily:T.serif, fontSize:15, color:T.text, lineHeight:1.9}}>Heute war ein wirklich guter Tag. Das Gespräch mit Elena hat mir sehr geholfen. Ich fühle mich klarer, energiegeladener und positiver gestimmt als in den letzten Wochen.</div>
+            <div style={{fontFamily:T.serif, fontSize:15, color:T.text, lineHeight:1.9, marginTop:16}}>Morgens 60 Minuten gelaufen und dabei meinen Lieblings-Podcast gehört. Mittags sehr produktiv — drei wichtige Aufgaben erledigt.</div>
+          </div>
+          <BottomNav active={1} light/>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 04 – Statistiken (Variante B)
+    ══════════════════════════════════════ */
+    function StatsB() {
+      const wm=[3,4,4,2,4], dl=['Mo','Di','Mi','Do','Fr'];
+      return (
+        <div style={{background:'#FEFCFA', display:'flex', flexDirection:'column', paddingTop:62, fontFamily:T.sans, color:T.text}}>
+          <div style={{padding:'16px 24px 16px', borderBottom:`1px solid ${T.border}`}}>
+            <div style={{fontFamily:T.serif, fontSize:12, color:T.muted, fontStyle:'italic'}}>Einblicke</div>
+            <div style={{fontFamily:T.serif, fontSize:26, fontWeight:300, color:T.text, marginTop:4}}>Diese Woche</div>
+          </div>
+          <div style={{display:'flex', borderBottom:`1px solid ${T.border}`}}>
+            {['7 Tage','30 Tage','3 Monate'].map((p,i)=>(
+              <div key={i} style={{flex:1, textAlign:'center', padding:'11px 0', borderBottom:i===0?`2px solid ${T.accent}`:'2px solid transparent', color:i===0?T.accent:T.muted, fontSize:13, fontWeight:i===0?600:400}}>{p}</div>
+            ))}
+          </div>
+          <div style={{margin:'16px 24px', padding:'14px 16px', borderRadius:16, background:T.accentBg, border:`1px solid ${T.accent}25`}}>
+            <div style={{fontSize:9, color:T.accent, fontWeight:700, textTransform:'uppercase', letterSpacing:'0.09em', marginBottom:10}}>Stimmung</div>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+              {wm.map((mood,i)=><div key={i} style={{display:'flex', flexDirection:'column', alignItems:'center', gap:5}}><span style={{fontSize:22}}>{MOODS[mood].emoji}</span><span style={{fontSize:10, color:T.muted}}>{dl[i]}</span></div>)}
+              {[{d:'Sa'},{d:'So'}].map((d,i)=><div key={i} style={{display:'flex', flexDirection:'column', alignItems:'center', gap:5}}><div style={{width:22, height:22, borderRadius:11, background:T.border}}/><span style={{fontSize:10, color:T.subtle}}>{d.d}</span></div>)}
+            </div>
+          </div>
+          {[
+            {icon:'moon',  label:'Durchschn. Schlaf',      value:'7.4 h',    sub:'Ziel: 8h'},
+            {icon:'zap',   label:'Energie-Schnitt',         value:'6.8 / 10', sub:'+0.5 vs. Vorwoche'},
+            {icon:'weight',label:'Gewicht',                 value:'73.1 kg',  sub:'−0.2 kg diese Woche'},
+            {icon:'pill',  label:'Medikamenten-Dosis',      value:'30 mg/Tag',sub:'2× täglich'},
+            {icon:'clip',  label:'Eindosierung Woche',      value:'Woche 3',  sub:'Nächste Bewertung: 19. Juni'},
+          ].map((s,i)=>(
+            <div key={i} style={{display:'flex', alignItems:'center', gap:14, padding:'13px 24px', borderBottom:`1px solid ${T.border}`}}>
+              <Icon name={s.icon} size={17} color={T.subtle}/>
+              <div style={{flex:1}}><div style={{fontSize:13, color:T.text}}>{s.label}</div><div style={{fontSize:11, color:T.muted, marginTop:1}}>{s.sub}</div></div>
+              <div style={{fontSize:15, fontWeight:600, color:T.text}}>{s.value}</div>
+            </div>
+          ))}
+          <BottomNav active={2} light/>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 05 – Eindosierungsphase (täglich)
+    ══════════════════════════════════════ */
+    const NumRow = ({ selected, isHaupt }) => {
+      const selColor = isHaupt ? T.accent : '#C47A40';
+      return (
+        <div style={{display:'flex', borderRadius:8, overflow:'hidden', border:`1px solid ${T.border}`, marginTop:7}}>
+          {[0,1,2,3,4,5,6,7,8,9,10].map(n=>(
+            <div key={n} style={{
+              flex:1, height:28,
+              background: n===selected ? selColor : 'transparent',
+              borderRight: n<10 ? `1px solid ${T.border}` : 'none',
+              display:'flex', alignItems:'center', justifyContent:'center',
+              fontSize:11, fontWeight:n===selected?700:400,
+              color: n===selected ? 'white' : T.muted,
+            }}>{n}</div>
+          ))}
+        </div>
+      );
+    };
+
+    const SymptomRow = ({ name, val, isHaupt }) => (
+      <div style={{padding:'11px 14px 12px', borderBottom:`1px solid ${T.border}`}}>
+        <div style={{fontSize:13, color:T.text, fontWeight:isHaupt?600:400}}>{name}</div>
+        <NumRow selected={val} isHaupt={isHaupt}/>
+      </div>
+    );
+
+    // Week progress data: done=filled, today=current, future=empty
+    const WEEK_PROGRESS = ['done','done','today','future','future','future','future'];
+    const WD_SHORT = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+
+    const WeekDots = ({ active }) => (
+      <div style={{padding:'11px 16px', borderBottom:`1px solid ${T.border}`, display:'flex', gap:4}}>
+        {WD_SHORT.map((d,i)=>{
+          const s = WEEK_PROGRESS[i];
+          return (
+            <div key={i} style={{flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:5}}>
+              <span style={{fontSize:9, color:T.muted, fontWeight:500}}>{d}</span>
+              <div style={{
+                width:28, height:28, borderRadius:14,
+                background: s==='done' ? T.green : s==='today' ? T.accent : T.border,
+                display:'flex', alignItems:'center', justifyContent:'center',
+              }}>
+                {s==='done' && <Icon name="check" size={12} color="white"/>}
+                {s==='today' && <span style={{fontSize:9, color:'white', fontWeight:700}}>H</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+
+    const EindoTabs = ({ active }) => (
+      <div style={{display:'flex', borderBottom:`1px solid ${T.border}`}}>
+        {['Tageseintrag','Wochenschnitt'].map((lbl,i)=>(
+          <div key={i} style={{flex:1, textAlign:'center', padding:'11px 0',
+            borderBottom: i===active ? `2px solid ${T.accent}` : '2px solid transparent',
+            color: i===active ? T.accent : T.muted,
+            fontSize:13, fontWeight: i===active ? 600 : 400}}>{lbl}</div>
+        ))}
+      </div>
+    );
+
+    function EindosierungScreen() {
+      const sum = [...HAUPT,...NEBEN].reduce((a,s)=>a+s.val, 0);
+      return (
+        <div style={{background:'#FEFCFA', display:'flex', flexDirection:'column', paddingTop:62, fontFamily:T.sans, color:T.text}}>
+
+          <div style={{padding:'13px 24px 12px', borderBottom:`1px solid ${T.border}`}}>
+            <div style={{fontFamily:T.serif, fontSize:12, color:T.muted, fontStyle:'italic'}}>Woche 3 der Eindosierungsphase</div>
+            <div style={{fontFamily:T.serif, fontSize:22, fontWeight:300, color:T.text, marginTop:3}}>Mi., 12. Juni 2026</div>
+          </div>
+
+          <WeekDots/>
+          <EindoTabs active={0}/>
+
+          <div style={{padding:'7px 20px', display:'flex', justifyContent:'space-between', background:T.bg, borderBottom:`1px solid ${T.border}`}}>
+            <span style={{fontSize:10, color:T.muted}}>0 = nicht vorhanden</span>
+            <span style={{fontSize:10, color:T.muted}}>10 = sehr stark</span>
+          </div>
+
+          <div style={{padding:'10px 20px 0'}}>
+            <div style={{fontSize:10, fontWeight:700, color:T.accent, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4}}>Hauptsymptome (ADHS)</div>
+          </div>
+          <div style={{marginLeft:20, marginRight:20, borderRadius:12, border:`1px solid ${T.border}`, overflow:'hidden', background:T.card}}>
+            {HAUPT.map((s,i)=><SymptomRow key={i} name={s.name} val={s.val} isHaupt={true}/>)}
+          </div>
+
+          <div style={{padding:'12px 20px 0'}}>
+            <div style={{fontSize:10, fontWeight:700, color:'#C47A40', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4}}>Nebenwirkungen</div>
+          </div>
+          <div style={{marginLeft:20, marginRight:20, borderRadius:12, border:`1px solid ${T.border}`, overflow:'hidden', background:T.card}}>
+            {NEBEN.map((s,i)=><SymptomRow key={i} name={s.name} val={s.val} isHaupt={false}/>)}
+          </div>
+
+          <div style={{margin:'13px 20px', padding:'13px 18px', borderRadius:14, background:T.accentBg, border:`1px solid ${T.accent}30`, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <div>
+              <div style={{fontSize:11, fontWeight:700, color:T.accent, textTransform:'uppercase', letterSpacing:'0.06em'}}>Tagessumme</div>
+              <div style={{fontSize:11, color:T.muted, marginTop:2}}>Mittwoch, 12. Juni</div>
+            </div>
+            <div style={{fontSize:32, fontWeight:700, color:T.accent}}>{sum}</div>
+          </div>
+
+          <div style={{padding:'0 20px 14px'}}>
+            <div style={{background:T.accent, borderRadius:14, padding:'13px', textAlign:'center', color:'white', fontSize:14, fontWeight:600}}>Heute speichern</div>
+          </div>
+
+          <BottomNav active={3} light/>
+        </div>
+      );
+    }
+
+    /* ══════════════════════════════════════
+       SCREEN 06 – Wochenschnitt-Ansicht
+    ══════════════════════════════════════ */
+    // Simulated daily data for Mo + Di (filled), Mi in progress
+    const AVG_HAUPT = [
+      { name:'Aufmerksamkeitsstörung',  days:[3,2,3],  avg:2.7 },
+      { name:'Impulsivität',            days:[2,1,2],  avg:1.7 },
+      { name:'Unorganisiertes Verhalten', days:[4,3,4], avg:3.7 },
+      { name:'Prokrastination',         days:[3,2,3],  avg:2.7 },
+    ];
+    const AVG_NEBEN = [
+      { name:'Innere Unruhe',           days:[1,0,1],  avg:0.7 },
+      { name:'Stimmungswechsel',        days:[0,0,0],  avg:0.0 },
+      { name:'Reizbarkeit',             days:[2,1,2],  avg:1.7 },
+      { name:'Müdigkeit',               days:[4,3,3],  avg:3.3 },
+      { name:'Schlafstörungen',         days:[3,2,2],  avg:2.3 },
+      { name:'Übelkeit',                days:[0,0,0],  avg:0.0 },
+      { name:'Schwindel',               days:[0,0,0],  avg:0.0 },
+      { name:'Appetitlosigkeit',        days:[1,1,1],  avg:1.0 },
+    ];
+
+    const AvgRow = ({ name, days, avg, isHaupt }) => {
+      const dotColor = isHaupt ? T.accent : '#C47A40';
+      const totalDays = 7;
+      return (
+        <div style={{padding:'11px 14px 12px', borderBottom:`1px solid ${T.border}`, display:'flex', alignItems:'center', gap:10}}>
+          <div style={{flex:1}}>
+            <div style={{fontSize:12, color:T.text, fontWeight:isHaupt?600:400, marginBottom:6}}>{name}</div>
+            <div style={{display:'flex', gap:3}}>
+              {Array.from({length:totalDays}).map((_,i)=>(
+                <div key={i} style={{
+                  width:20, height:20, borderRadius:5,
+                  background: i<days.length ? dotColor : T.border,
+                  opacity: i<days.length ? 0.4+days[i]/10*0.6 : 0.25,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                }}>
+                  {i<days.length && <span style={{fontSize:9, color:'white', fontWeight:700}}>{days[i]}</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{textAlign:'right', flexShrink:0}}>
+            <div style={{fontSize:18, fontWeight:700, color: isHaupt ? T.accent : '#C47A40'}}>{avg.toFixed(1)}</div>
+            <div style={{fontSize:9, color:T.muted}}>Ø / Tag</div>
+          </div>
+        </div>
+      );
+    };
+
+    function EindosierungWocheScreen() {
+      const gesamtAvg = ([...AVG_HAUPT,...AVG_NEBEN].reduce((a,s)=>a+s.avg,0)).toFixed(1);
+      return (
+        <div style={{background:'#FEFCFA', display:'flex', flexDirection:'column', paddingTop:62, fontFamily:T.sans, color:T.text}}>
+
+          <div style={{padding:'13px 24px 12px', borderBottom:`1px solid ${T.border}`}}>
+            <div style={{fontFamily:T.serif, fontSize:12, color:T.muted, fontStyle:'italic'}}>Woche 3 der Eindosierungsphase</div>
+            <div style={{fontFamily:T.serif, fontSize:22, fontWeight:300, color:T.text, marginTop:3}}>Wochenschnitt</div>
+          </div>
+
+          <WeekDots/>
+          <EindoTabs active={1}/>
+
+          {/* Legend */}
+          <div style={{padding:'8px 20px 7px', background:T.bg, borderBottom:`1px solid ${T.border}`, display:'flex', gap:16, alignItems:'center'}}>
+            <div style={{display:'flex', alignItems:'center', gap:5}}>
+              <div style={{width:10, height:10, borderRadius:3, background:T.accent, opacity:0.8}}/>
+              <span style={{fontSize:10, color:T.muted}}>eingetragen</span>
+            </div>
+            <div style={{display:'flex', alignItems:'center', gap:5}}>
+              <div style={{width:10, height:10, borderRadius:3, background:T.border}}/>
+              <span style={{fontSize:10, color:T.muted}}>noch offen</span>
+            </div>
+            <span style={{fontSize:10, color:T.muted, marginLeft:'auto'}}>3 / 7 Tage</span>
+          </div>
+
+          <div style={{padding:'10px 20px 0'}}>
+            <div style={{fontSize:10, fontWeight:700, color:T.accent, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4}}>Hauptsymptome (ADHS)</div>
+          </div>
+          <div style={{marginLeft:20, marginRight:20, borderRadius:12, border:`1px solid ${T.border}`, overflow:'hidden', background:T.card}}>
+            {AVG_HAUPT.map((s,i)=><AvgRow key={i} {...s} isHaupt={true}/>)}
+          </div>
+
+          <div style={{padding:'12px 20px 0'}}>
+            <div style={{fontSize:10, fontWeight:700, color:'#C47A40', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:4}}>Nebenwirkungen</div>
+          </div>
+          <div style={{marginLeft:20, marginRight:20, borderRadius:12, border:`1px solid ${T.border}`, overflow:'hidden', background:T.card}}>
+            {AVG_NEBEN.map((s,i)=><AvgRow key={i} {...s} isHaupt={false}/>)}
+          </div>
+
+          <div style={{margin:'13px 20px', padding:'13px 18px', borderRadius:14, background:T.accentBg, border:`1px solid ${T.accent}30`, display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+            <div>
+              <div style={{fontSize:11, fontWeight:700, color:T.accent, textTransform:'uppercase', letterSpacing:'0.06em'}}>Ø Wochensumme</div>
+              <div style={{fontSize:11, color:T.muted, marginTop:2}}>Bisher 3 Tage eingetragen</div>
+            </div>
+            <div style={{fontSize:32, fontWeight:700, color:T.accent}}>{gesamtAvg}</div>
+          </div>
+
+          <BottomNav active={3} light/>
+        </div>
+      );
+    }
+
+    /* ── App ── */
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection id="v2" title="Mood Tagebuch – Design v2" subtitle="Screen 01: Variante A · Screens 02–04: Variante B · Screen 05: Eindosierung (neu)">
+            <DCArtboard id="s1" label="01 · Heute + Medikamente" width={402} height={874}><IOSDevice><TodayA/></IOSDevice></DCArtboard>
+            <DCArtboard id="s2" label="02 · Kalender"            width={402} height={874}><IOSDevice><CalendarB/></IOSDevice></DCArtboard>
+            <DCArtboard id="s3" label="03 · Eintrag Detail"       width={402} height={874}><IOSDevice><DetailB/></IOSDevice></DCArtboard>
+            <DCArtboard id="s4" label="04 · Statistiken"          width={402} height={874}><IOSDevice><StatsB/></IOSDevice></DCArtboard>
+            <DCArtboard id="s5" label="05 · Eindosierung – Tageseintrag" width={402} height={874}><IOSDevice><EindosierungScreen/></IOSDevice></DCArtboard>
+            <DCArtboard id="s6" label="06 · Eindosierung – Wochenschnitt" width={402} height={874}><IOSDevice><EindosierungWocheScreen/></IOSDevice></DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>
