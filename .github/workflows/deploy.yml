@@ -31,7 +31,9 @@ jobs:
           cache: npm
           cache-dependency-path: mood-tagebuch/package-lock.json
 
-      - run: npm ci
+      # npm install (not ci): tolerant of minor lockfile drift across
+      # platforms; the committed lockfile still pins versions deterministically.
+      - run: npm install --no-audit --no-fund
 
       - run: npm test
 
