@@ -24,7 +24,7 @@ npm run dev        # Dev-Server (http://localhost:5173)
 npm test           # Vitest (Berechnungslogik)
 npm run build      # Type-Check + Produktions-Build inkl. PWA
 npm run preview    # Build lokal ausliefern
-npm run gen:icons  # PWA-Icons aus public/favicon.svg neu rendern (sharp)
+npm run gen:icons  # PWA-Icons neu rendern (erst `npm i -D sharp`; sonst nicht nötig)
 ```
 
 iPhone-Viewport in den DevTools: 402×874.

@@ -1,4 +1,7 @@
 // Rasterize public/favicon.svg into the PWA PNG icons.
+// `sharp` is not a regular dependency (the generated icons are committed and
+// the CI build never needs it). Install it on demand to regenerate:
+//   npm i -D sharp && npm run gen:icons
 // Run: node scripts/gen-icons.mjs
 import sharp from 'sharp';
 import { readFileSync } from 'node:fs';
