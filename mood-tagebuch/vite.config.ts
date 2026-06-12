@@ -4,7 +4,10 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
-export default defineConfig({
+// GitHub Pages serves this project under https://tinuid.github.io/moodbook/,
+// so the production base is "/moodbook/". Dev keeps "/" for convenience.
+export default defineConfig(({ command }) => ({
+  base: command === 'build' ? '/moodbook/' : '/',
   plugins: [
     react(),
     VitePWA({
@@ -19,10 +22,12 @@ export default defineConfig({
         display: 'standalone',
         orientation: 'portrait',
         lang: 'de',
+        // Relative paths → resolved against the manifest URL, so they work
+        // under the "/moodbook/" base on GitHub Pages.
         icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {
@@ -34,4 +39,4 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/*.test.ts'],
   },
-})
+}))
